@@ -3,6 +3,7 @@ const { mongooseConnection } = require('./services/mongo');
 const routes = require('./routes');
 require('dotenv').config();
 const path = require('path');
+const cors = require('cors');
 
 // Creating Express app
 const app = express();
@@ -11,6 +12,7 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.resolve('./public/')));
+app.use(cors());
 
 // Mongo Connection
 mongooseConnection().then((e) => console.log("MongoDB Connected!"));
