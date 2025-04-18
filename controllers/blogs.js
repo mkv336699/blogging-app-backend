@@ -15,14 +15,26 @@ const handleCreateBlog = async (req, res) => {
 
 const handleGetAllBlogs = async (req, res) => {
     try {
-        const blogs = await Blog.find({});
+        const blogs = await Blog.find({}).sort({ createdAt: 'desc' });
         return res.json({ data: blogs });
     } catch (err) {
         return res.json(err);
     }
 }
 
+const handleGetBlogById = async (req, res) => {
+    try {
+        const id = req.params.id;
+        if (!id) res.status(400).json({ error: "Invalid Id" });
+        const blog = await Blog.findOne({ _id: id }).populate("createdBy");
+        return res.json({ data: blog });
+    } catch (err) {
+        return res.json({ error: err });
+    }
+}
+
 module.exports = {
     handleCreateBlog,
-    handleGetAllBlogs
+    handleGetAllBlogs,
+    handleGetBlogById
 }
