@@ -11,7 +11,7 @@ const authenticate = (req, res, next) => {
             return;
         }
 
-        req.body.user = {
+        req.user = {
             _id: decoded._id,
             name: decoded.name,
             email: decoded.email,

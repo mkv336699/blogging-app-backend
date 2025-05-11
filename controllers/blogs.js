@@ -2,6 +2,7 @@ const Blog = require('../models/blog');
 
 const handleCreateBlog = async (req, res) => {
     try {
+        if (req.user) req.body.createdBy = req.user._id;
         if (!(req.body.title && req.body.body && req.body.createdBy))
             return res.status(400).json({ error: "Invalid payload" });
         console.log(req.file);
