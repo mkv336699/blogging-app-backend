@@ -1,5 +1,6 @@
 const User = require('../models/user');
 const { generateAuthToken } = require('../services/jwt.service');
+const jwt = require('jsonwebtoken');
 
 const handleCreateUser = async (req, res) => {
     try {
@@ -32,7 +33,47 @@ const handleLogin = async (req, res) => {
     }
 }
 
+const handleTokenRefresh = async (req, res) => {
+    try {
+        if (!req.headers.authorization) {
+            return res.status(400).json({ error: "No token provided" });
+        }
+
+        const token = req.headers.authorization;
+        
+        // Try to verify the token
+        jwt.verify(token, process.env.SECRET_KEY, (err, decoded) => {
+            if (err) {
+                // Check if the error is specifically due to token expiration
+                if (err.name === 'TokenExpiredError') {
+                    // Generate new token with the decoded payload
+                    const newToken = generateAuthToken(decoded);
+                    return res.json({ 
+                        message: "Token refreshed successfully",
+                        authToken: newToken 
+                    });
+                }
+                // For any other token error (invalid token, malformed, etc)
+                return res.status(498).json({ 
+                    error: "Invalid token",
+                    message: "Please login again" 
+                });
+            }
+            
+            // If token is still valid, return the same token
+            return res.json({ 
+                message: "Token is still valid",
+                authToken: token 
+            });
+        });
+    } catch(err) {
+        console.log(err);
+        return res.status(500).json({ error: "Internal server error" });
+    }
+}
+
 module.exports = {
     handleCreateUser,
-    handleLogin
+    handleLogin,
+    handleTokenRefresh
 }

@@ -1,6 +1,6 @@
 const { Router } = require('express');
 const { authenticate } = require('../middlewares/jwt')
-const { handleCreateUser, handleLogin } = require('../controllers/users');
+const { handleCreateUser, handleLogin, handleTokenRefresh } = require('../controllers/users');
 
 const router = Router();
 
@@ -10,5 +10,6 @@ router.get('/', authenticate, (req, res) => {
 
 router.post('/', handleCreateUser);
 router.post('/login', handleLogin);
+router.get('/refresh-token', handleTokenRefresh);
 
 module.exports = router;
