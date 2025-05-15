@@ -42,16 +42,44 @@ const handleTokenRefresh = async (req, res) => {
         const token = req.headers.authorization;
         
         // Try to verify the token
-        jwt.verify(token, process.env.SECRET_KEY, (err, decoded) => {
+        jwt.verify(token, process.env.SECRET_KEY, async (err, decoded) => {
             if (err) {
                 // Check if the error is specifically due to token expiration
                 if (err.name === 'TokenExpiredError') {
-                    // Generate new token with the decoded payload
-                    const newToken = generateAuthToken(decoded);
-                    return res.json({ 
-                        message: "Token refreshed successfully",
-                        authToken: newToken 
-                    });
+                    try {
+                        // Decode the token without verification to get the payload
+                        const decodedPayload = jwt.decode(token);
+                        
+                        if (!decodedPayload || !decodedPayload._id) {
+                            return res.status(498).json({ 
+                                error: "Invalid token payload",
+                                message: "Please login again" 
+                            });
+                        }
+
+                        // Fetch user from database using the ID from the expired token
+                        const user = await User.findById(decodedPayload._id);
+                        
+                        if (!user) {
+                            return res.status(498).json({ 
+                                error: "User not found",
+                                message: "Please login again" 
+                            });
+                        }
+
+                        // Generate new token with fresh user data
+                        const newToken = generateAuthToken(user);
+                        return res.json({ 
+                            message: "Token refreshed successfully",
+                            authToken: newToken 
+                        });
+                    } catch (decodeError) {
+                        console.error("Error decoding expired token:", decodeError);
+                        return res.status(498).json({ 
+                            error: "Invalid token",
+                            message: "Please login again" 
+                        });
+                    }
                 }
                 // For any other token error (invalid token, malformed, etc)
                 return res.status(498).json({ 
