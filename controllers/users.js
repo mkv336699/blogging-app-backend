@@ -100,8 +100,25 @@ const handleTokenRefresh = async (req, res) => {
     }
 }
 
+const handleUpdateProfilePic = async (req, res) => {
+    try {
+        if (!(req.user && req.file))
+            return res.status(400).json({ error: "Missing or invalid payload" });
+        
+        const result = await User.updateOne({ email: req.user.email }, { profileImageURL: `images/${req.file.filename}`});
+        if (result && result.acknowledged)
+            res.json({ message: "Success" })
+        else 
+            res.status(500).json({ error: "Update failed. Please try again later" })
+    } catch(err) {
+        console.log(err.message);
+        res.status(400).json({ error: err.message });
+    }
+}
+
 module.exports = {
     handleCreateUser,
     handleLogin,
-    handleTokenRefresh
+    handleTokenRefresh,
+    handleUpdateProfilePic
 }
