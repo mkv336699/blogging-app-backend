@@ -5,7 +5,7 @@ const { upload } = require('../services/multer-config');
 
 const router = Router();
 
-router.get("/", handleGetAllBlogs);
+router.post("/", handleGetAllBlogs);
 router.get("/:id", handleGetBlogById);
 router.post("/", [authenticate, upload.single('coverImageURL')], handleCreateBlog);
 

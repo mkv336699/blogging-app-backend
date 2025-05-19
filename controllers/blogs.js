@@ -16,7 +16,15 @@ const handleCreateBlog = async (req, res) => {
 
 const handleGetAllBlogs = async (req, res) => {
     try {
-        const blogs = await Blog.find({}).sort({ createdAt: 'desc' });
+        let payload = {}, skip = 0, limit = 0
+        if (req.body.criteria) {
+            payload = req.body.criteria
+        }
+        if (req.body.pagination) {
+            limit = req.body.pagination.recordsPerPage
+            skip = (req.body.pagination.pageNumber - 1) * req.body.pagination.recordsPerPage
+        }
+        const blogs = await Blog.find(payload).sort({ createdAt: 'desc' }).skip(skip).limit(limit);
         return res.json({ data: blogs });
     } catch (err) {
         return res.json(err);
