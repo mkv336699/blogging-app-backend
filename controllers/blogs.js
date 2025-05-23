@@ -24,8 +24,20 @@ const handleGetAllBlogs = async (req, res) => {
             limit = req.body.pagination.recordsPerPage
             skip = (req.body.pagination.pageNumber - 1) * req.body.pagination.recordsPerPage
         }
-        const blogs = await Blog.find(payload).sort({ createdAt: 'desc' }).skip(skip).limit(limit);
-        return res.json({ data: blogs });
+        
+        // Get total count of blogs matching the criteria
+        const total = await Blog.countDocuments(payload);
+        
+        // Get paginated blogs
+        const blogs = await Blog.find(payload)
+            .sort({ createdAt: 'desc' })
+            .skip(skip)
+            .limit(limit);
+
+        return res.json({ 
+            data: blogs,
+            total,
+        });
     } catch (err) {
         return res.json(err);
     }
